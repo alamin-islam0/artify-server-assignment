@@ -176,20 +176,20 @@ async function run() {
       }
     });
 
-    // Arts patch:
-    app.patch("/arts/:id", async (req, res) => {
-      const id = req.params.id;
-      const updateArt = req.body;
-      const query = { _id: new ObjectId(id) };
-      const update = {
-        $set: {
-          name: updateArt.name,
-          price: updateArt.price,
-        },
-      };
+    // -----------------------
+    // Get artworks by logged-in user (My Gallery)
+    // -----------------------
+    app.get('/my-arts', async (req, res) => {
+      try {
+        const { email } = req.query;
+        if (!email) return res.status(400).json({ error: 'email query param required' });
 
-      const result = await artCollection.updateOne(query, update);
-      res.send(result);
+        const results = await artCollection.find({ userEmail: email }).sort({ createdAt: -1 }).toArray();
+        res.json(results);
+      } catch (err) {
+        console.error('GET /my-arts error', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
     });
 
     await client.db("admin").command({ ping: 1 });
