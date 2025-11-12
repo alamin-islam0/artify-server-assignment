@@ -138,6 +138,28 @@ async function run() {
       }
     });
 
+    // -----------------------
+    // Increment like count
+    // -----------------------
+    app.patch('/arts/:id/like', async (req, res) => {
+      try {
+        const { id } = req.params;
+        if (!ObjectId.isValid(id)) return res.status(400).json({ error: 'Invalid id' });
+
+        const result = await artCollection.findOneAndUpdate(
+          { _id: new ObjectId(id) },
+          { $inc: { likes: 1 } },
+          { returnDocument: 'after' }
+        );
+
+        if (!result.value) return res.status(404).json({ error: 'Artwork not found' });
+        res.json({ likes: result.value.likes });
+      } catch (err) {
+        console.error('PATCH /arts/:id/like error', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
     //Arts delete:
     app.delete("/arts/:id", async (req, res) => {
       const id = req.params.id;
