@@ -88,7 +88,7 @@ async function run() {
         };
 
         if (sort === 'recent') options.sort = { createdAt: -1 };
-        else options.sort = { createdAt: -1 }; // default recent
+        else options.sort = { createdAt: -1 }; 
 
         const cursor = artCollection.find(query, options);
         const results = await cursor.toArray();
@@ -116,6 +116,24 @@ async function run() {
         res.json({ art, artist: { userName: art.userName, userEmail: art.userEmail, artistPhoto: art.artistPhoto || '', totalArtworks: artistCount } });
       } catch (err) {
         console.error('GET /arts/:id error', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+    // Update artwork (partial update) 
+    app.patch('/arts/:id', async (req, res) => {
+      try {
+        const { id } = req.params;
+        const update = req.body;
+        if (!ObjectId.isValid(id)) return res.status(400).json({ error: 'Invalid id' });
+
+        delete update.likes;
+        delete update.createdAt;
+
+        const result = await artCollection.updateOne({ _id: new ObjectId(id) }, { $set: update });
+        res.json(result);
+      } catch (err) {
+        console.error('PATCH /arts/:id error', err);
         res.status(500).json({ error: 'Internal server error' });
       }
     });
