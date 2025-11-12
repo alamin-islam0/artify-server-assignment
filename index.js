@@ -68,6 +68,39 @@ async function run() {
       }
     });
 
+    // List public artworks (Read)
+    app.get('/arts', async (req, res) => {
+      try {
+        const { search, category, page = 1, limit = 12, sort } = req.query;
+        const query = { visibility: 'Public' };
+
+        if (category) query.category = category;
+
+        if (search) {
+          const regex = new RegExp(search, 'i');
+          query.$or = [{ title: regex }, { userName: regex }];
+        }
+
+        const options = {
+          sort: {},
+          skip: (Math.max(1, parseInt(page)) - 1) * Math.max(1, parseInt(limit)),
+          limit: Math.max(1, parseInt(limit)),
+        };
+
+        if (sort === 'recent') options.sort = { createdAt: -1 };
+        else options.sort = { createdAt: -1 }; // default recent
+
+        const cursor = artCollection.find(query, options);
+        const results = await cursor.toArray();
+        const total = await artCollection.countDocuments(query);
+
+        res.json({ total, page: Number(page), limit: Number(limit), data: results });
+      } catch (err) {
+        console.error('GET /arts error', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
     //Arts delete:
     app.delete("/arts/:id", async (req, res) => {
       const id = req.params.id;
