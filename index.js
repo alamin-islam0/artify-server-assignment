@@ -215,11 +215,72 @@ async function run() {
       }
     });
 
+
+    // GET /favorites?email=user@example.com
+    app.get('/favorites', async (req, res) => {
+      try {
+        const { email } = req.query;
+        if (!email) return res.status(400).json({ error: 'email query param required' });
+
+        const favs = await favoritesCollection.find({ userEmail: email }).sort({ createdAt: -1 }).toArray();
+        const artIds = favs.map(f => f.artId);
+        const arts = await artCollection.find({ _id: { $in: artIds } }).toArray();
+
+        const data = favs.map(f => {
+          const art = arts.find(a => a._id.toString() === f.artId.toString());
+          return { favoriteId: f._id, createdAt: f.createdAt, art: art || null };
+        });
+
+        res.json(data);
+      } catch (err) {
+        console.error('GET /favorites error', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+    // DELETE /favorites/:id
+    app.delete('/favorites/:id', async (req, res) => {
+      try {
+        const { id } = req.params;
+        if (!ObjectId.isValid(id)) return res.status(400).json({ error: 'Invalid id' });
+
+        const result = await favoritesCollection.deleteOne({ _id: new ObjectId(id) });
+        res.json(result);
+      } catch (err) {
+        console.error('DELETE /favorites/:id error', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+    // -----------------------
+    // GET /artists/:email
+    // -----------------------
+    app.get('/artists/:email', async (req, res) => {
+      try {
+        const { email } = req.params;
+        if (!email) return res.status(400).json({ error: 'email required' });
+
+        const totalArtworks = await artCollection.countDocuments({ userEmail: email });
+        const oneArt = await artCollection.findOne({ userEmail: email });
+        const profile = {
+          userName: oneArt?.userName || '',
+          userEmail: email,
+          artistPhoto: oneArt?.artistPhoto || '',
+          totalArtworks,
+        };
+        res.json(profile);
+      } catch (err) {
+        console.error('GET /artists/:email error', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
   } finally {
+
   }
 }
 run().catch(console.dir);
