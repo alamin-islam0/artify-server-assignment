@@ -160,12 +160,20 @@ async function run() {
       }
     });
 
-    //Arts delete:
-    app.delete("/arts/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await artCollection.deleteOne(query);
-      res.send(result);
+   // -----------------------
+    // Delete artwork
+    // -----------------------
+    app.delete('/arts/:id', async (req, res) => {
+      try {
+        const { id } = req.params;
+        if (!ObjectId.isValid(id)) return res.status(400).json({ error: 'Invalid id' });
+
+        const result = await artCollection.deleteOne({ _id: new ObjectId(id) });
+        res.json(result);
+      } catch (err) {
+        console.error('DELETE /arts/:id error', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
     });
 
     // Arts patch:
