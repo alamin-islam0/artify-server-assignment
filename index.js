@@ -192,6 +192,29 @@ async function run() {
       }
     });
 
+    // -----------------------
+    // Favorites: add, list, remove
+    // -----------------------
+    // POST /favorites  body: { artId, userEmail }
+    app.post('/favorites', async (req, res) => {
+      try {
+        const { artId, userEmail } = req.body;
+        if (!artId || !userEmail) return res.status(400).json({ error: 'artId and userEmail required' });
+        if (!ObjectId.isValid(artId)) return res.status(400).json({ error: 'Invalid artId' });
+
+        // prevent duplicates
+        const exists = await favoritesCollection.findOne({ artId: new ObjectId(artId), userEmail });
+        if (exists) return res.status(409).json({ error: 'Already in favorites' });
+
+        const doc = { artId: new ObjectId(artId), userEmail, createdAt: new Date() };
+        const result = await favoritesCollection.insertOne(doc);
+        res.status(201).json({ insertedId: result.insertedId });
+      } catch (err) {
+        console.error('POST /favorites error', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
