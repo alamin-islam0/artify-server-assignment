@@ -1,11 +1,35 @@
-> Why do I have a folder named ".vercel" in my project?
-The ".vercel" folder is created when you link a directory to a Vercel project.
+Artify — Server (assignment)
 
-> What does the "project.json" file contain?
-The "project.json" file contains:
-- The ID of the Vercel project that you linked ("projectId")
-- The ID of the user or team your Vercel project is owned by ("orgId")
+This repository contains the server/API for the Artify demo store. It provides the backend endpoints used by the client application and is intended for local development and demonstration.
 
-> Should I commit the ".vercel" folder?
-No, you should not share the ".vercel" folder with anyone.
-Upon creation, it will be automatically added to your ".gitignore" file.
+Client (live): https://artify-store.netlify.app/
+
+Important features
+- RESTful API endpoints for core e-commerce functionality (products, users, orders/cart).
+- Database-backed: the server reads credentials from environment variables (`DB_USER`, `DB_PASS`).
+- Built with Express and MongoDB client libraries (see `package.json`).
+- Deployable to serverless platforms / Vercel (this repo includes Vercel config files).
+- CORS-enabled and uses `dotenv` for local environment configuration.
+
+Quick start
+1. Create a `.env` file in the project root with the required environment variables (do NOT commit secrets):
+
+	DB_USER=your_db_user
+	DB_PASS=your_db_password
+
+2. Install dependencies:
+
+	npm install
+
+3. Start the server locally:
+
+	npm start
+
+The server's main entry is `index.js` and additional API routes can be found in the `api/` folder.
+
+Notes and best practices
+- Keep `.env` and `.vercel` out of source control (they are typically in `.gitignore`).
+- Do not paste or commit database passwords or other secrets. Use environment variables in your deployment pipeline.
+- If you want to add more documentation, consider adding example requests for each endpoint and small JSON payload examples.
+
+If you'd like, I can add usage examples (curl / Postman), badges, or screenshots next. 
