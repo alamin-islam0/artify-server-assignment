@@ -1,4 +1,3 @@
-// index.js
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -38,11 +37,8 @@ async function ensureIndexes() {
     if (!artCollection) return;
     // text index for search on title and userName
     await artCollection.createIndex({ title: "text", userName: "text", category: 1 });
-    // quick lookup by userEmail
     await artCollection.createIndex({ userEmail: 1 });
-    // createdAt for sorting
     await artCollection.createIndex({ createdAt: -1 });
-    // featured & visibility for featured queries
     await artCollection.createIndex({ featured: 1, visibility: 1 });
     // favorites collection indexes
     if (favoritesCollection) {
@@ -57,7 +53,7 @@ async function ensureIndexes() {
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
     const dbName = process.env.DB_NAME || "artify";
     const db = client.db(dbName);
     artCollection = db.collection("arts");
@@ -367,7 +363,7 @@ async function run() {
       }
     });
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Connected to MongoDB and server routes set up.");
   } catch (err) {
     console.error("Failed to start server:", err);
@@ -381,7 +377,7 @@ run();
 process.on("SIGINT", async () => {
   console.log("SIGINT received — shutting down gracefully");
   try {
-    await client.close();
+    // await client.close();
     console.log("Mongo client closed");
   } catch (e) {
     console.warn("Error closing Mongo client", e);
