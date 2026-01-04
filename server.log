@@ -1,2 +1,0 @@
-[dotenv@17.2.3] injecting env (4) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
-Server running on port 3000
